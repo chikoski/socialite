@@ -16,10 +16,10 @@
 
 package com.google.android.samples.socialite.ui
 
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -40,12 +39,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
+import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
 import com.google.android.samples.socialite.ui.chat.ChatScreen
 import com.google.android.samples.socialite.ui.home.chatlist.ChatList
+import com.google.android.samples.socialite.ui.home.chatlist.OpenChatRequest
+import com.google.android.samples.socialite.ui.home.chatlist.openChatInNewInstance
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.Route
@@ -57,20 +59,20 @@ import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
 
 @Composable
 fun Main(
-    shortcutParams: ShortcutParams?,
+    appArgs: AppArgs?,
 ) {
     val modifier = Modifier.fillMaxSize()
     SocialTheme {
-        MainNavigation(modifier, shortcutParams)
+        MainNavigation(modifier, appArgs)
     }
 }
 
 @Composable
 fun MainNavigation(
-    modifier: Modifier,
-    shortcutParams: ShortcutParams?,
+    modifier: Modifier = Modifier,
+    appArgs: AppArgs?,
 ) {
-    val activity = LocalContext.current as Activity
+    val activity = LocalActivity.current
     val navController = rememberNavController()
 
     navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
@@ -78,9 +80,9 @@ fun MainNavigation(
         // constant, even on orientation changes. Note that the camera is still aware of
         // orientation, and will assign the correct edge as the bottom of the photo or video.
         if (destination.hasRoute<Route.Camera>()) {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         } else {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 
@@ -103,7 +105,16 @@ fun MainNavigation(
         ) {
             composable<Route.ChatsList> {
                 ChatList(
-                    onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
+                    onChatClicked = { request ->
+                        when (request) {
+                            is OpenChatRequest.SameInstance -> {
+                                navController.navigate(Route.ChatThread(request.chatId))
+                            }
+                            is OpenChatRequest.NewInstance -> {
+                                activity?.openChatInNewInstance(request)
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -195,17 +206,24 @@ fun MainNavigation(
         }
     }
 
-    if (shortcutParams != null) {
-        val chatId = extractChatId(shortcutParams.shortcutId)
-        val text = shortcutParams.text
-        navController.navigate(Route.ChatThread(chatId, text))
+    if (appArgs != null) {
+        handleAppArgs(appArgs = appArgs, navController = navController)
     }
 }
 
-data class ShortcutParams(
-    val shortcutId: String,
-    val text: String,
-)
+private fun handleAppArgs(appArgs: AppArgs, navController: NavController) {
+    when (appArgs) {
+        is AppArgs.ShortcutParams -> {
+            val chatId = extractChatId(appArgs.shortcutId)
+            val text = appArgs.text
+            navController.navigate(Route.ChatThread(chatId, text))
+        }
+        is AppArgs.ChatParams -> {
+            val chatId = appArgs.chatId
+            navController.navigate(Route.ChatThread(chatId))
+        }
+    }
+}
 
 object AnimationConstants {
     private const val ENTER_MILLIS = 250
