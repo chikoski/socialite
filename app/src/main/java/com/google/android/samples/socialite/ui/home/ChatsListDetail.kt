@@ -122,7 +122,7 @@ private fun handleOChatOpenRequest(
     }
 }
 
-internal fun Activity.tryCreateIntentFrom(params: AppArgs.LaunchParams): Intent? {
+internal fun Activity.createIntentFrom(params: AppArgs.LaunchParams): Intent {
     return Intent(Intent.ACTION_VIEW).apply {
         component = componentName
         putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, params.chatId)
@@ -138,8 +138,8 @@ internal fun Activity.tryCreateIntentFrom(params: AppArgs.LaunchParams): Intent?
 }
 
 private fun Activity.launchAnotherInstance(params: AppArgs.LaunchParams) {
-    val intent = tryCreateIntentFrom(params)
-    if (intent?.resolveActivity(packageManager) != null) {
+    val intent = createIntentFrom(params)
+    if (intent.resolveActivity(packageManager) != null) {
         startActivity(intent)
     }
 }
