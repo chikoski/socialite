@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavHostController
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.ui.chat.ChatScreen
@@ -58,6 +59,14 @@ fun ChatsListDetail(
                 pane = ListDetailPaneScaffoldRole.Detail,
                 contentKey = chatId,
             )
+        }
+    }
+
+    // Update the layout according to the window size
+    LaunchedEffect(LocalConfiguration.current) {
+        val destination = navigator.currentDestination
+        if (destination != null) {
+            navigator.navigateTo(destination.pane, destination.contentKey)
         }
     }
 
