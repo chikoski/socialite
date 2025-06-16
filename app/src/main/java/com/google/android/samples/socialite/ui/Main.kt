@@ -98,15 +98,15 @@ fun MainNavigation(
      * A [NavEntryDecorator] that wraps each entry in a shared element that is controlled by the
      * [Scene].
      */
-    val sharedEntryInSceneNavEntryDecorator = navEntryDecorator { entry ->
+    val sharedEntryInSceneNavEntryDecorator = navEntryDecorator<TopLevelDestination> { entry ->
         with(localNavSharedTransitionScope.current) {
             Box(
                 Modifier.sharedElement(
-                    rememberSharedContentState(entry.key),
+                    rememberSharedContentState(entry.contentKey),
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 ),
             ) {
-                entry.content(entry.key)
+                entry.Content()
             }
         }
     }
