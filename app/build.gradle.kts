@@ -41,7 +41,7 @@ android {
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
-        minSdk = 21
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -169,4 +169,8 @@ dependencies {
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
     implementation(libs.lifecycle.viewmodel.navigation3)
+
+    // XR
+    implementation(libs.compose.xr)
+    implementation(libs.compose.xr.material3)
 }

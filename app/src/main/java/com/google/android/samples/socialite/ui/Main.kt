@@ -45,6 +45,8 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import androidx.xr.compose.material3.EnableXrComponentOverrides
+import androidx.xr.compose.material3.ExperimentalMaterial3XrApi
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
@@ -64,13 +66,18 @@ import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3XrApi::class)
 @Composable
 fun Main(
     appArgs: AppArgs? = null,
 ) {
-    val modifier = Modifier.fillMaxSize()
-    SocialTheme {
-        MainNavigation(modifier, appArgs)
+    EnableXrComponentOverrides {
+        SocialTheme {
+            MainNavigation(
+                modifier = Modifier.fillMaxSize(),
+                appArgs = appArgs
+            )
+        }
     }
 }
 

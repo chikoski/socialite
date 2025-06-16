@@ -20,6 +20,8 @@ import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.FullscreenExit
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.Icon
@@ -32,6 +34,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.xr.compose.platform.LocalSession
+import androidx.xr.compose.platform.LocalSpatialCapabilities
+import androidx.xr.compose.platform.LocalSpatialConfiguration
+import androidx.xr.runtime.Session
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Companion.isTopLevel
 import kotlinx.parcelize.Parcelize
@@ -132,6 +138,7 @@ private fun calculateNavigationLayoutType(
 fun SocialiteNavSuite(
     backStack: MutableList<Pane>,
     modifier: Modifier = Modifier,
+    xrSession: Session? = LocalSession.current,
     content: @Composable () -> Unit,
 ) {
     val currentPane = backStack.lastOrNull()
@@ -141,6 +148,9 @@ fun SocialiteNavSuite(
         currentWindowAdaptiveInfo(),
     )
     val layoutType = calculateNavigationLayoutType(currentPane, defaultLayoutType)
+
+    val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
+    val spatialConfiguration = LocalSpatialConfiguration.current
 
     NavigationSuiteScaffold(
         modifier = modifier,
@@ -166,6 +176,27 @@ fun SocialiteNavSuite(
                     },
                     alwaysShowLabel = false,
                 )
+                if(xrSession != null) {
+                    item(
+                        selected = false,
+                        onClick = {
+                            if(isSpatialUiEnabled) {
+                                spatialConfiguration.requestHomeSpaceMode()
+                            } else {
+                                spatialConfiguration.requestFullSpaceMode()
+                            }
+                        },
+                        label = {
+                            Text(text = "Toggle Space Mode")
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = if(isSpatialUiEnabled) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
+                                contentDescription = null,
+                            )
+                        }
+                    )
+                }
             }
         },
     ) {
